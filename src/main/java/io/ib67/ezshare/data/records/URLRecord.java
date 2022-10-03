@@ -26,10 +26,12 @@
 package io.ib67.ezshare.data.records;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 public record URLRecord(
         String id,
-        Instant creationDate,
-        String destination
+        LocalDateTime time,
+        String destination,
+        String ip
 ) {
 }

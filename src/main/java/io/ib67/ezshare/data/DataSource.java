@@ -27,16 +27,21 @@ package io.ib67.ezshare.data;
 
 import io.ib67.ezshare.data.records.FileRecord;
 import io.ib67.ezshare.data.records.URLRecord;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public interface DataSource {
-    Optional<FileRecord> fetchFileById(String id);
-    Optional<URLRecord> fetchURLById(String id);
+    String TABLE_FILE = "t_files";
+    String TABLE_URL = "t_urls";
+    void fetchFileById(String id, Consumer<Future<FileRecord>> callback);
+    void fetchURLById(String id, Consumer<Future<URLRecord>> callback);
 
-    void addFileRecord(FileRecord fr);
-    void addUrlRecord(URLRecord ur);
+    Future<?> addFileRecord(FileRecord fr);
+    Future<?> addUrlRecord(URLRecord ur);
 
-    void removeFileRecord(FileRecord fr);
-    void removeURLRecord(URLRecord ur);
+    Future<?> removeFileRecord(FileRecord fr);
+    Future<?> removeURLRecord(URLRecord ur);
 }

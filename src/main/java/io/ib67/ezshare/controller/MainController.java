@@ -25,16 +25,16 @@
 
 package io.ib67.ezshare.controller;
 
-import io.javalin.http.Context;
+import io.vertx.ext.web.RoutingContext;
 
-public interface AppController {
-    void handleRoot(Context ctx) throws Exception;
+public interface MainController {
+    void handleMainPage(RoutingContext routingContext);
 
-    void handleShortenUrl(Context context) throws Exception;
+    void handleRedirection(RoutingContext routingContext);
 
-    void handleURLJump(Context context) throws Exception;
+    void handleDownload(RoutingContext routingContext);
 
-    void handleUpload(Context context) throws Exception;
+    void handleUpload(RoutingContext routingContext);
 
-    void handleDownload(Context context);
+    void authPass(RoutingContext routingContext);
 }

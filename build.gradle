@@ -17,9 +17,12 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
-    implementation 'io.javalin:javalin:5.0.0'
     implementation 'com.h2database:h2:2.1.212'
+   // implementation 'org.xerial:sqlite-jdbc:3.39.3.0'
     compileOnly 'org.jetbrains:annotations:23.0.0'
+    implementation 'io.vertx:vertx-web:4.3.3'
+    implementation 'io.vertx:vertx-jdbc-client:4.3.3'
+    implementation 'io.vertx:vertx-reactive-streams:4.3.3'
     implementation 'com.typesafe:config:1.4.2'
     implementation 'org.slf4j:slf4j-simple:2.0.3'
     implementation 'org.slf4j:slf4j-api:2.0.3'

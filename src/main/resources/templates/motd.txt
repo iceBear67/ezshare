@@ -2,10 +2,10 @@ EzShare
 =======
 
 HTTP POST files here, one file at a time:
-`curl -F'file=@yourfile.png' {{baseUrl}}/uploadFile`
+`curl -F'file=@yourfile.png' {{baseUrl}}/`
 
 Shorten your URL:
-`curl -X POST -d 'https://github.com/iceBear67/ezshare' {{baseUrl}}/shortenUrl`
+`curl -X POST -d 'https://github.com/iceBear67/ezshare' {{baseUrl}}/`
 
 Not allowed: {{notAllowed}}
 
@@ -22,9 +22,7 @@ Here is NOT a platform for:
 people have been dumping terabytes of it here for years)
 * CI build artifacts
 * doxxing, database dumps containing personal information
-* anything illegal under German law
+* anything illegal
 
 Uploads found to be in violation of these rules will be removed,
 and the originating IP address blocked from further uploads.
-
-Note that Tor exit nodes are blocked by the firewall due to frequent rule violations.

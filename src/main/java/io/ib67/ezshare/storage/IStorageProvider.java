@@ -23,21 +23,19 @@
  * SOFTWARE.
  */
 
-package io.ib67.ezshare.data.records;
+package io.ib67.ezshare.storage;
+
+import io.ib67.ezshare.data.records.FileRecord;
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.streams.ReadStream;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.RoutingContext;
 
 import java.nio.file.Path;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
-public record FileRecord(
-        String id,
-        LocalDateTime time,
-        String fileIdentifier, /* Usually Path in FileStorage*/
-        long size,
-        String fileName,
-        String mimeType,
-        String ip,
-
-        String storageType
-) {
+public interface IStorageProvider {
+    void store(RoutingContext context, FileUpload file, Consumer<Future<String>> identifierCallback);
+    void download(FileRecord fr, RoutingContext context);
 }

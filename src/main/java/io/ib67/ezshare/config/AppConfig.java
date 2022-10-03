@@ -27,38 +27,31 @@ package io.ib67.ezshare.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigBeanFactory;
+import com.typesafe.config.ConfigFactory;
+import lombok.Data;
+import lombok.Getter;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-public record AppConfig(
-        String addr,
-        int port,
-        Path uploadContainer,
-        String jdbcUrl,
-        String baseUrl,
-        int maxFileSizeKiB,
-        int preservedSize,
-        List<String> bannedTypes
-) {
-
-    public static AppConfig loadConfig(Config config) throws IOException {
-        var burl = config.getString("base-url");
-        return new AppConfig(
-                config.getString("listen-addr"),
-                config.getInt("listen-port"),
-                Path.of(config.getString("upload-dir")),
-                config.getString("jdbc-url"),
-                burl.endsWith("/") ? burl.substring(0, burl.length() - 1) : burl,
-                config.getInt("max-allowed-size-inkib"),
-                config.getInt("preserve-space"),
-                config.getStringList("banned-content-types")
-        );
+@Data
+public final class AppConfig {
+    public static AppConfig loadConfig(Config config) {
+        var defaultConfig = ConfigFactory.load("templates/application.conf");
+        return ConfigBeanFactory.create(config.resolveWith(defaultConfig), AppConfig.class);
     }
 
+    private int port;
+    private String listenAddr;
+    private String baseUrl;
+    private String certPath;
+    private String keyPath;
+    private String uploadTmpDir;
+    private String defaultStoreType;
+    private String jdbcUrl;
+    private int preservedSpace;
+    private long maxBodySizeInKiB;
+    private boolean enablePassword;
+    private List<String> passwords;
+    private List<String> bannedMimeTypes;
 }
