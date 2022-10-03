@@ -63,31 +63,12 @@ public class LocalStorageProvider implements IStorageProvider {
 
         identifierCallback.accept(vertx.fileSystem().move(file.uploadedFileName(), path.toAbsolutePath().toString())
                 .map(it -> id));
-        /*vertx.fileSystem().open(path.toString(), new OpenOptions().setWrite(true).setCreate(true))
-                .onSuccess(asyncFile -> {
-                    asyncFile.setWritePos(0);
-                    ReadStream
-                    var pump = Pump.pump(readStream, asyncFile);
-                    pump.start();
-                    ctx.request().endHandler(it -> {
-                        identifierCallback.accept(Future.succeededFuture(id));
-                    });
-                }).onFailure(it -> identifierCallback.accept(Future.failedFuture(it)));*/
     }
 
     @Override
     public void download(FileRecord fr, RoutingContext context) {
         context.attachment(fr.fileName());
         var time = System.currentTimeMillis();
-        /*vertx.fileSystem().readFile(storageDir.resolve(fr.fileIdentifier()).toAbsolutePath().toString())
-                .onSuccess(it -> {
-                    context.response().headers().set("Content-Type", fr.mimeType());
-                    context.response().headers().set("Content-Length", String.valueOf(fr.size()));
-                    context.end(it);
-                    log.info("[Download] " + fr.fileName() + " tooks " + (System.currentTimeMillis() - time) + "ms");
-                }).onFailure(it -> {
-                    context.end("Failed to download file.");
-                });*/
         vertx.fileSystem().open(storageDir.resolve(fr.fileIdentifier()).toAbsolutePath().toString(), new OpenOptions().setRead(true))
                 .onSuccess(it -> {
                     context.response().headers().set("Content-Type", fr.mimeType());

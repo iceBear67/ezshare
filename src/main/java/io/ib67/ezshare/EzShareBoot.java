@@ -203,7 +203,7 @@ public final class EzShareBoot {
     private HttpServerOptions getHttpOptions() {
         var opt = new HttpServerOptions();
         if (config.getKeyPath().isEmpty() != config.getCertPath().isEmpty()) {
-            log.warn("One between key-path and cert-path is missing, We will not enable TLS Support.");
+            log.warn("One of the key-path and cert-path is missing, We will not enable TLS Support.");
         } else if (!config.getKeyPath().isEmpty()) {
             opt.setPemKeyCertOptions(new PemKeyCertOptions().addCertPath(config.getCertPath()).addKeyPath(config.getKeyPath()));
             opt.setSsl(true);
