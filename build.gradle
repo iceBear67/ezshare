@@ -1,11 +1,10 @@
-import io.franzbecker.gradle.lombok.task.DelombokTask
-
 import java.time.Instant
 
 plugins {
     id 'java'
     id "com.github.johnrengelman.shadow" version "7.1.2"
     id 'java-library'
+    id 'org.graalvm.buildtools.native' version '0.9.14'
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
 }
 
@@ -18,9 +17,15 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
-
+    implementation 'io.javalin:javalin:5.0.0'
+    implementation 'com.h2database:h2:2.1.212'
     compileOnly 'org.jetbrains:annotations:23.0.0'
+    implementation 'com.typesafe:config:1.4.2'
+    implementation 'org.slf4j:slf4j-simple:2.0.3'
+    implementation 'org.slf4j:slf4j-api:2.0.3'
+
 }
+
 
 test {
     useJUnitPlatform()
@@ -44,28 +49,14 @@ lombok {
     version = "1.18.24"
 }
 
-task delombok(type: DelombokTask, dependsOn: compileJava) {
-    ext.outputDir = file("$buildDir/delombok")
-    outputs.dir(outputDir)
-    sourceSets.main.java.srcDirs.each {
-        inputs.dir(it)
-        args(it, "-d", outputDir)
-    }
-    doFirst {
-        outputDir.deleteDir()
+shadowJar {
+    manifest {
+        attributes(Map.of(
+                "Main-Class","io.ib67.ezshare.EzShareBoot"
+        ))
     }
 }
-/*
-  Javadoc
- */
-javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-javadoc {
-    title("${project.name} JavaDoc v${project.version}")
-    exclude Set.of('**/internal/**', '**/impl/**', '**Impl', 'Simple**')
-    dependsOn delombok
-    source = delombok.outputDir
-    failOnError = false
-}
+
 /*
  Misc: Some stuff for build info generation
  */
@@ -91,3 +82,16 @@ def getCheckedOutGitCommitHash() {
 def buildDate = Instant.now().toString()
 def buildBy = System.getProperty("user.name")
 def commitHash = getCheckedOutGitCommitHash()
+processResources {
+    def props = [
+            version   : version,
+            buildTime : buildDate,
+            buildBy   : (buildBy.equals("runner") || buildBy.equals("icybear")) ? buildBy : "Unknown / $buildBy",
+            commitHash: commitHash
+    ]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('*') {
+        expand props
+    }
+}
