@@ -95,6 +95,10 @@ public class EzShareController implements MainController {
     }
 
     private void handleFileUpload(RoutingContext routingContext, FileUpload fileUpload) {
+        if(config.getBannedMimeTypes().contains(fileUpload.contentType())){
+            routingContext.end("Banned MIME type.");
+            return;
+        }
         log.info("Receiving File: " + fileUpload.fileName() + " (" + fileUpload.size() / 1024 / 1024 + "M), " + fileUpload.contentType());
         //routingContext.request().pause();
         var provider = providerMap.get(config.getDefaultStoreType());

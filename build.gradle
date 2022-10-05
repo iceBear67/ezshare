@@ -6,6 +6,7 @@ plugins {
     id 'java-library'
     id 'org.graalvm.buildtools.native' version '0.9.14'
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
+    id("com.palantir.graal") version "0.4.0" // regular plugin import
 }
 
 group 'io.ib67'
