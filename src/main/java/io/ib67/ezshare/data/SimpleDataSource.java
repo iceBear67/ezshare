@@ -33,6 +33,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PrepareOptions;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,19 +69,21 @@ public class SimpleDataSource implements DataSource {
                         return;
                     }
                     var result = rows.iterator().next(); // id is unique.
-                    callback.accept(Future.succeededFuture(new FileRecord(
-                            result.getString(0),
-                            result.getLocalDateTime(1),
-                            result.getString(2),
-                            result.getLong(3),
-                            result.getString(4),
-                            result.getString(5),
-                            result.getString(6),
-                            result.getString(7)
-                    )));
+                    callback.accept(Future.succeededFuture(fromRow(result)));
                 });
     }
-
+    public static FileRecord fromRow(Row result){
+        return new FileRecord(
+                result.getString(0),
+                result.getLocalDateTime(1),
+                result.getString(2),
+                result.getLong(3),
+                result.getString(4),
+                result.getString(5),
+                result.getString(6),
+                result.getString(7)
+        );
+    }
     @Override
     public void fetchURLById(String id, Consumer<Future<URLRecord>> callback) {
         pool.preparedQuery(SQL_QUERY_URL_BY_ID)

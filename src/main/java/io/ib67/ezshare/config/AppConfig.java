@@ -29,16 +29,14 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigBeanFactory;
 import com.typesafe.config.ConfigFactory;
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public final class AppConfig {
     public static AppConfig loadConfig(Config config) {
         var defaultConfig = ConfigFactory.load("templates/application.conf");
-        return ConfigBeanFactory.create(config.resolveWith(defaultConfig), AppConfig.class);
+        return ConfigBeanFactory.create(defaultConfig.resolveWith(config), AppConfig.class);
     }
 
     private int port;
@@ -50,7 +48,8 @@ public final class AppConfig {
     private String defaultStoreType;
     private String jdbcUrl;
     private int preservedSpace;
-    private long maxBodySizeInKiB;
+    private int expireHours;
+    private long maxBodySize;
     private boolean enablePassword;
     private List<String> passwords;
     private List<String> bannedMimeTypes;

@@ -38,4 +38,6 @@ import java.util.function.Consumer;
 public interface IStorageProvider {
     void store(RoutingContext context, FileUpload file, Consumer<Future<String>> identifierCallback);
     void download(FileRecord fr, RoutingContext context);
+
+    void delete(FileRecord fr);
 }

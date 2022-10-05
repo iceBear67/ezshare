@@ -42,6 +42,7 @@ import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.Tuple;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +52,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -69,6 +73,7 @@ public final class EzShareBoot {
     private Config rawConfig;
     private MainController mainController;
     private Map<String, IStorageProvider> providers = new HashMap<>();
+    private ScheduledExecutorService expiryDeleter = Executors.newSingleThreadScheduledExecutor();
 
     private void init() {
         // try to read buildInfo.
@@ -90,7 +95,7 @@ public final class EzShareBoot {
 
             var bodyHandler = BodyHandler.create()
                     .setHandleFileUploads(true)
-                    .setBodyLimit(config.getMaxBodySizeInKiB()*1024)
+                    .setBodyLimit(config.getMaxBodySize() * 1024)
                     .setDeleteUploadedFilesOnEnd(false)
                     .setUploadsDirectory(config.getUploadTmpDir());
 
@@ -103,12 +108,28 @@ public final class EzShareBoot {
                 upload.handler(mainController::authPass);
             }
             upload.handler(bodyHandler).handler(mainController::handleUpload);
-
             // LETS GO
             vertx.createHttpServer(getHttpOptions())
                     .requestHandler(router)
                     .listen(config.getPort(), config.getListenAddr(), this::whenHttpReady);
         });
+    }
+
+    private void launchExpiry(JDBCPool dataSource) {
+        //- ? hour
+        dataSource.preparedQuery("SELECT * FROM t_files WHERE creationDate <= CURRENT_TIMESTAMP - ? minute")
+                .execute(Tuple.of(config.getExpireHours()))
+                .onSuccess(it -> {
+                    log.info("Cleaned {} files", it.size());
+                    var iter = it.iterator();
+                    while (iter.hasNext()) {
+                        var i = SimpleDataSource.fromRow(iter.next());
+                        providers.get(i.storageType()).delete(i);;
+                        log.info("File: {} - {}M", i.fileName(), i.size() / 1024 / 1024);
+                    }
+                }).onFailure(t -> {
+                    log.warn("Failed to clean files! ", t);
+                });
     }
 
     private void loadStorageProviders() {
@@ -184,6 +205,7 @@ public final class EzShareBoot {
                             """)
                     .execute().result();
             callback.accept(pool);
+            expiryDeleter.scheduleAtFixedRate(() -> launchExpiry(pool), 0L, 1, TimeUnit.MINUTES);
             return null;
         });
         return pool;

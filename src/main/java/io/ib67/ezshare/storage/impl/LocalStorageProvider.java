@@ -38,10 +38,12 @@ import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.http.HttpHeaders;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
@@ -82,5 +84,11 @@ public class LocalStorageProvider implements IStorageProvider {
                 }).onFailure(it -> {
                     context.end("Failed to download file.");
                 });
+    }
+
+    @SneakyThrows
+    @Override
+    public void delete(FileRecord fr) {
+        Files.deleteIfExists(storageDir.resolve(fr.fileIdentifier()));
     }
 }
