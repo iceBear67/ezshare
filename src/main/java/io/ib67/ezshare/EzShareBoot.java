@@ -84,15 +84,16 @@ public final class EzShareBoot {
         extractResources();
         // initiate datasource
         loadDatabase(dataSource -> {
+            var ds = new SimpleDataSource(dataSource, config);
             mainController = new EzShareController(
                     config,
-                    new SimpleDataSource(dataSource, config),
+                    ds,
                     vertx,
                     STATIC,
                     providers
             );
             // load routes
-
+            expiryDeleter.scheduleAtFixedRate(() -> launchExpiry(pool,ds), 0L, 1, TimeUnit.MINUTES);
             var bodyHandler = BodyHandler.create()
                     .setHandleFileUploads(true)
                     .setBodyLimit(config.getMaxBodySize() * 1024)
@@ -115,7 +116,7 @@ public final class EzShareBoot {
         });
     }
 
-    private void launchExpiry(JDBCPool dataSource) {
+    private void launchExpiry(JDBCPool dataSource, SimpleDataSource ds) {
         //- ? hour
         dataSource.preparedQuery("SELECT * FROM t_files WHERE creationDate <= CURRENT_TIMESTAMP - ? minute")
                 .execute(Tuple.of(config.getExpireHours()))
@@ -124,11 +125,16 @@ public final class EzShareBoot {
                     var iter = it.iterator();
                     while (iter.hasNext()) {
                         var i = SimpleDataSource.fromRow(iter.next());
-                        providers.get(i.storageType()).delete(i);;
-                        log.info("File: {} - {}M", i.fileName(), i.size() / 1024 / 1024);
+                        ds.removeFileRecord(i)
+                            .onSuccess(it -> {
+                                providers.get(i.storageType()).delete(i);
+                                log.info("File: {} - {}M", i.fileName(), i.size() / 1024 / 1024);
+                            }).onFailure(t -> {
+                                log.warn("Failed to remove {}! {} ",i, t);
+                            });
                     }
                 }).onFailure(t -> {
-                    log.warn("Failed to clean files! ", t);
+                    log.warn("Failed to clean files! {}", t);
                 });
     }
 
@@ -205,7 +211,6 @@ public final class EzShareBoot {
                             """)
                     .execute().result();
             callback.accept(pool);
-            expiryDeleter.scheduleAtFixedRate(() -> launchExpiry(pool), 0L, 1, TimeUnit.MINUTES);
             return null;
         });
         return pool;
