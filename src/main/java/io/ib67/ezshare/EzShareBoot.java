@@ -93,7 +93,7 @@ public final class EzShareBoot {
                     providers
             );
             // load routes
-            expiryDeleter.scheduleAtFixedRate(() -> launchExpiry(pool,ds), 0L, 1, TimeUnit.MINUTES);
+            expiryDeleter.scheduleAtFixedRate(() -> launchExpiry(dataSource,ds), 0L, 1, TimeUnit.MINUTES);
             var bodyHandler = BodyHandler.create()
                     .setHandleFileUploads(true)
                     .setBodyLimit(config.getMaxBodySize() * 1024)
@@ -126,7 +126,7 @@ public final class EzShareBoot {
                     while (iter.hasNext()) {
                         var i = SimpleDataSource.fromRow(iter.next());
                         ds.removeFileRecord(i)
-                            .onSuccess(it -> {
+                            .onSuccess(itz -> {
                                 providers.get(i.storageType()).delete(i);
                                 log.info("File: {} - {}M", i.fileName(), i.size() / 1024 / 1024);
                             }).onFailure(t -> {
