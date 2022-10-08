@@ -36,7 +36,7 @@ import java.util.List;
 public final class AppConfig {
     public static AppConfig loadConfig(Config config) {
         var defaultConfig = ConfigFactory.load("templates/application.conf");
-        return ConfigBeanFactory.create(defaultConfig.resolveWith(config), AppConfig.class);
+        return ConfigBeanFactory.create(config.resolveWith(defaultConfig), AppConfig.class);
     }
 
     private int port;
