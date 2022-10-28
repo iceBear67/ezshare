@@ -56,6 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Slf4j
 public final class EzShareBoot {
@@ -93,7 +94,7 @@ public final class EzShareBoot {
                     providers
             );
             // load routes
-            expiryDeleter.scheduleAtFixedRate(() -> launchExpiry(dataSource,ds), 0L, 1, TimeUnit.MINUTES);
+            expiryDeleter.scheduleAtFixedRate(() -> launchExpiry(dataSource, ds), 0L, 1, TimeUnit.MINUTES);
             var bodyHandler = BodyHandler.create()
                     .setHandleFileUploads(true)
                     .setBodyLimit(config.getMaxBodySize() * 1024)
@@ -121,20 +122,19 @@ public final class EzShareBoot {
         dataSource.preparedQuery("SELECT * FROM t_files WHERE creationDate <= CURRENT_TIMESTAMP - ? minute")
                 .execute(Tuple.of(config.getExpireHours()))
                 .onSuccess(it -> {
-                    log.info("Cleaned {} files", it.size());
-                    var iter = it.iterator();
-                    while (iter.hasNext()) {
-                        var i = SimpleDataSource.fromRow(iter.next());
+                    if (it.size() > 0) log.info("Cleaned {} files", it.size());
+                    for (io.vertx.sqlclient.Row row : it) {
+                        var i = SimpleDataSource.fromRow(row);
                         ds.removeFileRecord(i)
-                            .onSuccess(itz -> {
-                                providers.get(i.storageType()).delete(i);
-                                log.info("File: {} - {}M", i.fileName(), i.size() / 1024 / 1024);
-                            }).onFailure(t -> {
-                                log.warn("Failed to remove {}! {} ",i, t);
-                            });
+                                .onSuccess(itz -> {
+                                    providers.get(i.storageType()).delete(i);
+                                    log.info("File: {} - {}M", i.fileName(), i.size() / 1024 / 1024);
+                                }).onFailure(t -> {
+                                    log.warn("Failed to remove {}! {} ", i, t);
+                                });
                     }
                 }).onFailure(t -> {
-                    log.warn("Failed to clean files! {}", t);
+                    log.warn("Failed to clean files! ", t);
                 });
     }
 
@@ -158,7 +158,7 @@ public final class EzShareBoot {
     private String processTemplates(String readResourceAsText) {
         return readResourceAsText
                 .replaceAll("\\{\\{baseUrl}}", config.getBaseUrl())
-                .replaceAll("\\{\\{notAllowed}}", config.getBaseUrl());
+                .replaceAll("\\{\\{notAllowed}}", config.getBannedMimeTypes().stream().collect(Collectors.joining(", ")));
     }
 
     @SneakyThrows
