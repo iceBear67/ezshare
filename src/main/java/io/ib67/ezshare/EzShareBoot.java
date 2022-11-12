@@ -33,7 +33,9 @@ import io.ib67.ezshare.controller.MainController;
 import io.ib67.ezshare.data.SimpleDataSource;
 import io.ib67.ezshare.storage.IStorageProvider;
 import io.ib67.ezshare.storage.impl.LocalStorageProvider;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -59,22 +61,27 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4j
-public final class EzShareBoot {
-    public static void main(String[] args) {
-        new EzShareBoot().init();
-    }
+public final class EzShareBoot extends AbstractVerticle {
+
 
     private static final ClassLoader CL = EzShareBoot.class.getClassLoader();
     private static final Path ROOT = Path.of(".");
     private static final Path STATIC = ROOT.resolve("static");
 
-    private final Vertx vertx = Vertx.vertx();
-    private final Router router = Router.router(vertx);
+    private Vertx vertx;
+    private Router router;
     private AppConfig config;
     private Config rawConfig;
     private MainController mainController;
     private Map<String, IStorageProvider> providers = new HashMap<>();
     private ScheduledExecutorService expiryDeleter = Executors.newSingleThreadScheduledExecutor();
+
+    @Override
+    public void start() {
+        vertx = getVertx();
+        router = Router.router(vertx);
+        init();
+    }
 
     private void init() {
         // try to read buildInfo.
@@ -190,10 +197,10 @@ public final class EzShareBoot {
                             CREATE TABLE IF NOT EXISTS t_files (
                               id VARCHAR(6) NOT NULL UNIQUE,
                               creationDate DATETIME NOT NULL,
-                              pathToFile VARCHAR(64) NOT NULL,
+                              pathToFile VARCHAR(128) NOT NULL,
                               size BIGINT NOT NULL,
-                              fileName VARCHAR(16) NOT NULL,
-                              mimeType VARCHAR(32) NOT NULL,
+                              fileName VARCHAR(128) NOT NULL,
+                              mimeType VARCHAR(64) NOT NULL,
                               ip VARCHAR(45) NOT NULL,
                               storageType VARCHAR(16) NOT NULL,
                               PRIMARY KEY (`id`)
@@ -204,7 +211,7 @@ public final class EzShareBoot {
                                 CREATE TABLE IF NOT EXISTS t_urls (
                                     id VARCHAR(6) NOT NULL UNIQUE,
                                     creationDate DATETIME NOT NULL,
-                                    destination VARCHAR(128) NOT NULL,
+                                    destination VARCHAR(256) NOT NULL,
                                     ip VARCHAR(45) NOT NULL,
                                     PRIMARY KEY (`id`)
                                 );

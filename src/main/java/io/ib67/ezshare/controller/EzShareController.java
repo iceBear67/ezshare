@@ -95,7 +95,7 @@ public class EzShareController implements MainController {
     }
 
     private void handleFileUpload(RoutingContext routingContext, FileUpload fileUpload) {
-        if(config.getBannedMimeTypes().contains(fileUpload.contentType())){
+        if (config.getBannedMimeTypes().contains(fileUpload.contentType())) {
             routingContext.end("Banned MIME type.");
             return;
         }
@@ -118,8 +118,11 @@ public class EzShareController implements MainController {
                         fileUpload.contentType(),
                         routingContext.request().localAddress().hostAddress(),
                         config.getDefaultStoreType()
-                ));
-                routingContext.end(config.getBaseUrl() + "/files/" + id);
+                )).onSuccess(ignored -> {
+                    routingContext.end(config.getBaseUrl() + "/files/" + id);
+                }).onFailure(throwable -> {
+                    routingContext.end("Cannot insert record into database. Upload failed");
+                });
             });
         });
     }
@@ -152,20 +155,20 @@ public class EzShareController implements MainController {
             routingContext.end("ID is missing");
             return;
         }
-        source.fetchFileById(id,it->{
-            it.onSuccess(fr->{
+        source.fetchFileById(id, it -> {
+            it.onSuccess(fr -> {
                 var provider = providerMap.get(fr.storageType());
-                if(provider == null){
-                    log.error("Cannot find storageType {}",fr.storageType());
+                if (provider == null) {
+                    log.error("Cannot find storageType {}", fr.storageType());
                     routingContext.end("This file cannot be downloaded, please contact admin.");
                     return;
                 }
-                provider.download(fr,routingContext);
-            }).onFailure(er->{
-               // probably not found.
-               routingContext.response().setStatusCode(404);
-               routingContext.response().end(er.getMessage());
-               return;
+                provider.download(fr, routingContext);
+            }).onFailure(er -> {
+                // probably not found.
+                routingContext.response().setStatusCode(404);
+                routingContext.response().end(er.getMessage());
+                return;
             });
         });
     }
@@ -186,9 +189,9 @@ public class EzShareController implements MainController {
             routingContext.reroute(HttpMethod.GET, "/");
             return;
         }
-        if (body.length() > 128) {
+        if (body.length() > 256) {
             routingContext.response().setStatusCode(400);
-            routingContext.end("URL is too long (> 128)");
+            routingContext.end("URL is too long (> 256)");
             return;
         }
         var url = body.asString();
