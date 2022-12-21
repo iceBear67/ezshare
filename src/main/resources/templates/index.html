@@ -1,23 +1,80 @@
-<h1 id="ezshare">EzShare</h1>
-<p>HTTP POST files here:
-    <code>curl -F&#39;file=@yourfile.png&#39; {{baseUrl}}/</code></p>
-<p>Shorten your URL:
-    <code>curl -X POST -d &#39;https://github.com/iceBear67/ezshare&#39; {{baseUrl}}/</code></p>
+<html>
+<head>
+    <link rel="stylesheet"
+          href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css"/>
+    <link rel="stylesheet"
+          href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.components.min.css"/>
+    <link href="https://unpkg.com/prismjs@v1.x/themes/prism.css" rel="stylesheet"/>
+    <script src="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/js/fabric.min.js"></script>
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
 
-<p>Not allowed: {{notAllowed}}</p>
-<h2 id="terms-of-service">TERMS OF SERVICE</h2>
-<p>Here is NOT a platform for:</p>
-<ul>
-    <li>piracy</li>
-    <li>pornography and gore</li>
-    <li>extremist material of any kind</li>
-    <li>malware / botnet C&amp;C</li>
-    <li>anything related to crypto currencies</li>
-    <li>backups (yes, this includes your minecraft stuff, seriously
-        people have been dumping terabytes of it here for years)</li>
-    <li>CI build artifacts</li>
-    <li>doxxing, database dumps containing personal information</li>
-    <li>anything illegal</li>
-</ul>
-<p>Uploads found to be in violation of these rules will be removed,
-    and the originating IP address blocked from further uploads.</p>
+    <meta charset="UTF-8">
+
+    <title>EzShare</title>
+</head>
+<body class="ms-bgColor-gray10 ms-Grid">
+<div class="align" id="site-content">
+    <div class="ms-Grid-row">
+        <div id="title">
+            <span class="ms-fontSize-32 ms-font-su ms-fontColor-themePrimary" style="text-align: center;">Paste</span>
+        </div>
+        <fluent-card>
+            <div class="content">
+                <span class="ms-fontSize-24 ms-fontColor-themePrimary"># Usage</span>
+                <p>HTTP POST files here:
+                    <pre class="language-bash">curl -F&#39;file=@yourfile.png&#39; https://0.ib67.io/</pre></p>
+                <p>Shorten your URL:
+                    <pre class="language-bash">curl -X POST -d &#39;https://github.com/iceBear67/ezshare&#39; {{baseUrl}}</pre></p>
+
+                <p>Not allowed: {{notAllowed}}</p>
+                <fluent-divider></fluent-divider>
+                <br>
+                <span class="ms-fontSize-24 ms-fontColor-themePrimary"># Terms of Service</span>
+                <p>Here is NOT a platform for:</p>
+                <ul>
+                    <li>piracy</li>
+                    <li>pornography and gore</li>
+                    <li>extremist material of any kind</li>
+                    <li>malware / botnet C&amp;C</li>
+                    <li>anything related to crypto currencies</li>
+                    <li>backups (yes, this includes your minecraft stuff, seriously
+                        people have been dumping terabytes of it here for years)</li>
+                    <li>CI build artifacts</li>
+                    <li>doxxing, database dumps containing personal information</li>
+                    <li>anything illegal</li>
+                </ul>
+                <p>Uploads found to be in violation of these rules will be removed,
+                    and the originating IP address blocked from further uploads.</p>
+
+            </div>
+        </fluent-card>
+    </div>
+</div>
+</body>
+<script src="https://unpkg.com/prismjs@v1.x/components/prism-core.min.js"></script>
+<script src="https://unpkg.com/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
+<style>
+    .align {
+        margin: auto;
+        width: 100%;
+        padding: 10px;
+    }
+    .content {
+        padding: 20px;
+    }
+    h1 {
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+    fluent-card {
+        height: auto;
+        margin-right: 20px;
+        width: auto;
+    }
+    md-block {
+        overflow-y: scroll;
+        font-family: Segoe UI WestEuropean,Segoe UI,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif, system-ui;
+    }
+</style>
+</html>

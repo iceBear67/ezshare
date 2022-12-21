@@ -108,7 +108,7 @@ public class EzShareController implements MainController {
             it.onFailure(msg -> {
                 routingContext.end(msg.getMessage());
             }).onSuccess(identifier -> {
-                log.info("File " + fileUpload.fileName() + " is saved! Took " + (System.currentTimeMillis() - time) / 1000 + "s");
+                log.info("File " + fileUpload.fileName() + " (" + fileUpload.contentType() + ")" + " is saved! Took " + (System.currentTimeMillis() - time) / 1000 + "s");
                 source.addFileRecord(new FileRecord(
                         id,
                         LocalDateTime.now(),
