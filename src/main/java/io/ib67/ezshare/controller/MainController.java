@@ -37,4 +37,6 @@ public interface MainController {
     void handleUpload(RoutingContext routingContext);
 
     void authPass(RoutingContext routingContext);
+
+    void handleShowPaste(RoutingContext routingContext);
 }

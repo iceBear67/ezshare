@@ -112,6 +112,7 @@ public final class EzShareBoot extends AbstractVerticle {
             router.get("/").handler(mainController::handleMainPage);
             router.get("/:id").handler(mainController::handleRedirection);
             router.get("/files/:id").handler(mainController::handleDownload);
+            router.get("/paste/:id").handler(mainController::handleShowPaste);
             var upload = router.post("/");
             if (config.isEnablePassword()) {
                 upload.handler(mainController::authPass);
@@ -160,6 +161,7 @@ public final class EzShareBoot extends AbstractVerticle {
         }
         writeIfNotExist(STATIC.resolve("index.html"), processTemplates(readResourceAsText("templates/index.html")));
         writeIfNotExist(STATIC.resolve("motd.txt"), processTemplates(readResourceAsText("templates/motd.txt")));
+        writeIfNotExist(STATIC.resolve("paste.html"),processTemplates(readResourceAsText("templates/paste.html")));
     }
 
     private String processTemplates(String readResourceAsText) {

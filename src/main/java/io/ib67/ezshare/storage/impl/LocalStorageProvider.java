@@ -86,6 +86,12 @@ public class LocalStorageProvider implements IStorageProvider {
                 });
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public Future<ReadStream<Buffer>> read(FileRecord fr) {
+        return (Future<ReadStream<Buffer>>) (Object) vertx.fileSystem().open(storageDir.resolve(fr.fileIdentifier()).toAbsolutePath().toString(), new OpenOptions().setRead(true));
+    }
+
     @SneakyThrows
     @Override
     public void delete(FileRecord fr) {

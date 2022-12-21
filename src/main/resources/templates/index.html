@@ -23,9 +23,11 @@
             <div class="content">
                 <span class="ms-fontSize-24 ms-fontColor-themePrimary"># Usage</span>
                 <p>HTTP POST files here:
-                    <pre class="language-bash">curl -F&#39;file=@yourfile.png&#39; https://0.ib67.io/</pre></p>
+                    <pre class="language-bash">curl -i -F &#39;file=@yourfile.png&#39; {{baseUrl}}</pre></p>
                 <p>Shorten your URL:
-                    <pre class="language-bash">curl -X POST -d &#39;https://github.com/iceBear67/ezshare&#39; {{baseUrl}}</pre></p>
+                    <pre class="language-bash">curl -d &#39;https://github.com/iceBear67/ezshare&#39; {{baseUrl}}</pre></p>
+                <p>View paste:
+                    <pre class="language-bashh">{{baseUrl}}/paste/:id</pre></p>
 
                 <p>Not allowed: {{notAllowed}}</p>
                 <fluent-divider></fluent-divider>

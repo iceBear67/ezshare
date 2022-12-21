@@ -1,0 +1,62 @@
+<html>
+<head>
+    <link rel="stylesheet"
+          href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css"/>
+    <link rel="stylesheet"
+          href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.components.min.css"/>
+    <link href="https://unpkg.com/prismjs@v1.x/themes/prism.css" rel="stylesheet"/>
+    <script src="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/js/fabric.min.js"></script>
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
+
+    <meta charset="UTF-8">
+
+    <title>EzShare</title>
+</head>
+<body class="ms-bgColor-gray10 ms-Grid">
+<div class="align" id="site-content">
+    <div class="ms-Grid-row">
+        <div id="title">
+            <span class="ms-fontSize-32 ms-font-su ms-fontColor-themePrimary" style="text-align: center;">Paste</span>
+        </div>
+        <fluent-card>
+            <div class="content">
+                <md-block id="output">
+                    {template}
+                </md-block>
+            </div>
+        </fluent-card>
+    </div>
+</div>
+</body>
+
+<script src="https://unpkg.com/prismjs@v1.x/components/prism-core.min.js"></script>
+<script src="https://unpkg.com/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
+<style>
+    .align {
+        margin: auto;
+        width: 100%;
+        padding: 10px;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    h1 {
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    fluent-card {
+        height: auto;
+        margin-right: 20px;
+        width: auto;
+    }
+
+    md-block {
+        overflow-y: scroll;
+        font-family: Segoe UI WestEuropean, Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, Helvetica Neue, sans-serif, system-ui;
+    }
+</style>
+</html>

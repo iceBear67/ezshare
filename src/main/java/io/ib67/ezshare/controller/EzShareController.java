@@ -31,33 +31,22 @@ import io.ib67.ezshare.data.records.FileRecord;
 import io.ib67.ezshare.data.records.URLRecord;
 import io.ib67.ezshare.storage.IStorageProvider;
 import io.ib67.ezshare.util.RandomHelper;
-import io.netty.handler.codec.http.HttpConstants;
-import io.netty.handler.codec.http.HttpStatusClass;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.streams.Pump;
-import io.vertx.core.streams.ReadStream;
-import io.vertx.ext.reactivestreams.ReactiveReadStream;
-import io.vertx.ext.reactivestreams.ReactiveWriteStream;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.impl.FileUploadImpl;
-import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Slf4j
-@RequiredArgsConstructor
 public class EzShareController implements MainController {
     private final AppConfig config;
 
@@ -65,6 +54,21 @@ public class EzShareController implements MainController {
     private final Vertx vertx;
     private final Path staticPath;
     private final Map<String, IStorageProvider> providerMap;
+    private final String[] templatePaste;
+
+    @SneakyThrows
+    public EzShareController(AppConfig config, DataSource source, Vertx vertx, Path staticPath, Map<String, IStorageProvider> providerMap) {
+        this.config = config;
+        this.source = source;
+        this.vertx = vertx;
+        this.staticPath = staticPath;
+        this.providerMap = providerMap;
+        templatePaste = Files.readString(staticPath.resolve("paste.html")).split("\\{template}");
+        if (templatePaste.length != 2) {
+            log.warn("You can have only one {template}");
+            throw new IllegalStateException();
+        }
+    }
 
     @Override
     public void handleMainPage(RoutingContext routingContext) {
@@ -119,6 +123,10 @@ public class EzShareController implements MainController {
                         routingContext.request().localAddress().hostAddress(),
                         config.getDefaultStoreType()
                 )).onSuccess(ignored -> {
+                    if (routingContext.request().getHeader("Content-Type").startsWith("text")
+                            && fileUpload.size() < 1024 * 1024 * 1024) {
+                        routingContext.response().putHeader("X-View-URL", config.getBaseUrl() + "/paste/" + id);
+                    }
                     routingContext.end(config.getBaseUrl() + "/files/" + id);
                 }).onFailure(throwable -> {
                     routingContext.end("Cannot insert record into database. Upload failed");
@@ -230,6 +238,48 @@ public class EzShareController implements MainController {
         } else {
             ctx.next();
         }
+    }
+
+    @Override
+    public void handleShowPaste(RoutingContext routingContext) {
+        var id = routingContext.pathParam("id");
+        if (id == null) {
+            printFailPaste(routingContext);
+            return;
+        }
+        source.fetchFileById(id, ftr -> {
+            ftr.onSuccess(fr -> {
+                if (fr.size() > 1024 * 1024 * 1024) {
+                    // 1M
+                    printFailPaste(routingContext);
+                    return;
+                }
+                routingContext.response().setStatusCode(200);
+                //routingContext.response().putHeader("Content-Length", String.valueOf(fr.size()+templatePaste[0].length()+templatePaste[1].length()));
+                routingContext.response().setChunked(true);
+                providerMap.get(fr.storageType()).read(fr).onSuccess(buf -> {
+                    routingContext.response().write(templatePaste[0]);
+                    buf.handler(it->{
+                        routingContext.response().write(it);
+                        routingContext.response().end(templatePaste[1]);
+                    });
+                }).onFailure(it->{
+                    it.printStackTrace();;
+                    printFailPaste(routingContext);
+                });
+            }).onFailure(tr -> {
+                printFailPaste(routingContext);
+            });
+        });
+    }
+
+    private void printFailPaste(RoutingContext routingContext) {
+        routingContext.response().setStatusCode(404);
+        var msg = "**The requested paste is not exists or it is too big to preview.**";
+        routingContext.response().putHeader("Content-Length", String.valueOf(templatePaste[0].length() + templatePaste[1].length() + msg.length()));
+        routingContext.response().write(templatePaste[0]);
+        routingContext.response().write(msg);
+        routingContext.response().end(templatePaste[1]);
     }
 
     private static boolean validUrl(String url) {
