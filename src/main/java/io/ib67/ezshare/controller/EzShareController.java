@@ -25,6 +25,8 @@
 
 package io.ib67.ezshare.controller;
 
+import com.google.zxing.WriterException;
+import io.github.shashankn.qrterminal.QRCode;
 import io.ib67.ezshare.config.AppConfig;
 import io.ib67.ezshare.data.DataSource;
 import io.ib67.ezshare.data.records.FileRecord;
@@ -113,7 +115,7 @@ public class EzShareController implements MainController {
                 routingContext.end(msg.getMessage());
             }).onSuccess(identifier -> {
                 log.info("File " + fileUpload.fileName() + " (" + fileUpload.contentType() + ")" + " is saved! Took " + (System.currentTimeMillis() - time) / 1000 + "s");
-                source.addFileRecord(new FileRecord(
+                var fr = new FileRecord(
                         id,
                         LocalDateTime.now(),
                         identifier,
@@ -122,13 +124,29 @@ public class EzShareController implements MainController {
                         fileUpload.contentType(),
                         routingContext.request().localAddress().hostAddress(),
                         config.getDefaultStoreType()
-                )).onSuccess(ignored -> {
-                    if (routingContext.request().getHeader("Content-Type").startsWith("text")
-                            && fileUpload.size() < 1024 * 1024 * 1024) {
+                );
+                source.addFileRecord(fr).onSuccess(ignored -> {
+                    String qrcode;
+                    boolean viewPaste = false;
+                    if (fileUpload.size() < 1024 * 1024) {
                         routingContext.response().putHeader("X-View-URL", config.getBaseUrl() + "/paste/" + id);
+                        try {
+                            qrcode = QRCode.from(config.getBaseUrl() + "/paste/" + id + "\n").generateHalfBlock();
+                        } catch (WriterException e) {
+                            qrcode = "";
+                        }
+                        viewPaste = true;
+                    } else {
+                        try {
+                            qrcode = QRCode.from(config.getBaseUrl() + "/files/" + id).generateHalfBlock();
+                        } catch (WriterException e) {
+                            qrcode = "";
+                        }
                     }
-                    routingContext.end("Download directly: " + config.getBaseUrl() + "/files/" + id +
-                            "\nView Paste: " + config.getBaseUrl() + "/paste/" + id);
+
+                    routingContext.end("Download: " + config.getBaseUrl() + "/files/" + id +
+                            (viewPaste ? ("\nView Paste: " + config.getBaseUrl() + "/paste/" + id + "\n") : "\n")
+                            + qrcode+"\n");
                 }).onFailure(throwable -> {
                     routingContext.end("Cannot insert record into database. Upload failed");
                 });
