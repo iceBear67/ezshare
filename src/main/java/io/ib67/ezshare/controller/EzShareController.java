@@ -127,7 +127,8 @@ public class EzShareController implements MainController {
                             && fileUpload.size() < 1024 * 1024 * 1024) {
                         routingContext.response().putHeader("X-View-URL", config.getBaseUrl() + "/paste/" + id);
                     }
-                    routingContext.end(config.getBaseUrl() + "/files/" + id);
+                    routingContext.end("Download directly: " + config.getBaseUrl() + "/files/" + id +
+                            "\nView Paste: " + config.getBaseUrl() + "/paste/" + id);
                 }).onFailure(throwable -> {
                     routingContext.end("Cannot insert record into database. Upload failed");
                 });
@@ -259,12 +260,13 @@ public class EzShareController implements MainController {
                 routingContext.response().setChunked(true);
                 providerMap.get(fr.storageType()).read(fr).onSuccess(buf -> {
                     routingContext.response().write(templatePaste[0]);
-                    buf.handler(it->{
+                    buf.handler(it -> {
                         routingContext.response().write(it);
                         routingContext.response().end(templatePaste[1]);
                     });
-                }).onFailure(it->{
-                    it.printStackTrace();;
+                }).onFailure(it -> {
+                    it.printStackTrace();
+                    ;
                     printFailPaste(routingContext);
                 });
             }).onFailure(tr -> {
